@@ -1,0 +1,61 @@
+version: "3.8"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: sentinel-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-change-me}
+      MYSQL_DATABASE: immune_sentinel
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-time-zone=+08:00
+      - --innodb-buffer-pool-size=512M
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${DB_PASSWORD:-change-me}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    container_name: sentinel-app
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: immune_sentinel
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD:-change-me}
+      SENTINEL_BASE_URL: ${SENTINEL_BASE_URL:-http://localhost:8080}
+      SENTINEL_TOKEN_SECRET: ${SENTINEL_TOKEN_SECRET:-please-change-this-secret}
+      SENTINEL_ADMIN_TOKEN: ${SENTINEL_ADMIN_TOKEN:-please-change-this-admin-token}
+      SENTINEL_STORAGE_DIR: /data/uploads
+      TZ: Asia/Shanghai
+    volumes:
+      - ./data/uploads:/data/uploads
+      - ./logs:/app/logs
+    ports:
+      - "127.0.0.1:8080:8080"
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: sentinel-nginx
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./data/uploads:/var/www/files:ro

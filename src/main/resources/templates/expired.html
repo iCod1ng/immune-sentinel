@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <title>链接失效</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}"/>
+</head>
+<body>
+<div class="page page-center">
+    <div class="expired">
+        <div class="done-title">链接无法访问</div>
+        <div class="done-sub" th:text="${error}"></div>
+        <div class="done-sub">请联系家属或管理员重新获取。</div>
+    </div>
+</div>
+</body>
+</html>

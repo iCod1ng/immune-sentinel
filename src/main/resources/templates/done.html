@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <title>已保存</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}"/>
+</head>
+<body>
+<div class="page page-center">
+    <div class="done">
+        <div class="done-title">✓ 已保存</div>
+        <div class="done-sub">
+            状态：<span th:text="${outcome.status() == 'done' ? '全部完成' : '部分完成'}"></span>
+            · 异常 <span th:text="${outcome.abnormalCount()}"></span> 项
+        </div>
+
+        <div class="hits" th:if="${outcome.abnormalCount() > 0}">
+            <div class="hits-title">⚠ 以下项目触发了告警，已同步推送到家属群：</div>
+            <ul>
+                <li th:each="h : ${outcome.hits()}">
+                    <b th:text="${h.title}"></b>
+                    <span th:text="${h.severityLabel()}"></span>
+                    <div class="detail" th:text="${h.detail}"></div>
+                </li>
+            </ul>
+        </div>
+
+        <a class="back" th:href="@{'/c/' + ${token}}">返回查看 / 继续补填</a>
+    </div>
+</div>
+</body>
+</html>

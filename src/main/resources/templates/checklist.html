@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
+    <title th:text="${template.name}">Checklist</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}"/>
+</head>
+<body>
+<div class="page">
+    <header class="hdr">
+        <div class="title" th:text="${template.name}"></div>
+        <div class="sub">
+            <span th:text="${patient.name}"></span>
+            · <span th:text="${#temporals.format(instance.dueDate,'yyyy-MM-dd')}"></span>
+        </div>
+    </header>
+
+    <form th:action="@{'/c/' + ${token} + '/submit'}" method="post" id="checklist-form">
+
+        <th:block th:each="entry : ${grouped}">
+            <section class="section">
+                <h2 th:text="${entry.key}">section</h2>
+
+                <th:block th:each="iv : ${entry.value}">
+                    <div class="item" th:data-rule="${iv.item.redFlagRule}">
+                        <label class="label">
+                            <span th:text="${iv.item.label}"></span>
+                            <span class="req" th:if="${iv.item.required == 1}">*</span>
+                        </label>
+                        <div class="hint" th:if="${iv.item.hint}" th:text="${iv.item.hint}"></div>
+
+                        <!-- number -->
+                        <div th:if="${iv.item.inputType == 'number'}" class="input-wrap">
+                            <input type="number" step="0.1" inputmode="decimal"
+                                   th:name="${iv.item.code + '__num'}"
+                                   th:value="${iv.v('num')}"
+                                   th:placeholder="${iv.item.normalRange ?: '请输入数值'}"/>
+                            <span class="unit" th:if="${iv.item.unit}" th:text="${iv.item.unit}"></span>
+                        </div>
+
+                        <!-- bp 复合 -->
+                        <div th:if="${iv.item.inputType == 'bp'}" class="input-wrap bp">
+                            <input type="number" inputmode="numeric"
+                                   th:name="${iv.item.code + '__sys'}"
+                                   th:value="${iv.v('sys')}" placeholder="收缩"/>
+                            <span>/</span>
+                            <input type="number" inputmode="numeric"
+                                   th:name="${iv.item.code + '__dia'}"
+                                   th:value="${iv.v('dia')}" placeholder="舒张"/>
+                            <span class="unit">mmHg</span>
+                        </div>
+
+                        <!-- checkbox -->
+                        <div th:if="${iv.item.inputType == 'checkbox'}" class="input-wrap">
+                            <label class="switch">
+                                <input type="checkbox" value="true"
+                                       th:name="${iv.item.code + '__checked'}"
+                                       th:checked="${iv.v('checked') == true or iv.v('checked') == 'true'}"/>
+                                <span>勾选表示"是 / 已完成"</span>
+                            </label>
+                        </div>
+
+                        <!-- text -->
+                        <div th:if="${iv.item.inputType == 'text'}" class="input-wrap">
+                            <textarea rows="2" th:name="${iv.item.code + '__text'}"
+                                      th:text="${iv.v('text')}"
+                                      placeholder="请简要描述"></textarea>
+                        </div>
+
+                        <!-- fast 复合 -->
+                        <div th:if="${iv.item.inputType == 'composite' and iv.item.code == 'fast_test'}"
+                             class="input-wrap fast">
+                            <div class="fast-row">
+                                <span>嘴角对称</span>
+                                <select th:name="${iv.item.code + '__face'}">
+                                    <option value="ok" th:selected="${iv.v('face') == 'ok'}">正常</option>
+                                    <option value="abnormal" th:selected="${iv.v('face') == 'abnormal'}">异常</option>
+                                </select>
+                            </div>
+                            <div class="fast-row">
+                                <span>双手平举 5 秒</span>
+                                <select th:name="${iv.item.code + '__arm'}">
+                                    <option value="ok" th:selected="${iv.v('arm') == 'ok'}">正常</option>
+                                    <option value="abnormal" th:selected="${iv.v('arm') == 'abnormal'}">异常</option>
+                                </select>
+                            </div>
+                            <div class="fast-row">
+                                <span>说话清晰</span>
+                                <select th:name="${iv.item.code + '__speech'}">
+                                    <option value="ok" th:selected="${iv.v('speech') == 'ok'}">正常</option>
+                                    <option value="abnormal" th:selected="${iv.v('speech') == 'abnormal'}">异常</option>
+                                </select>
+                            </div>
+                            <div class="fast-warn">任一异常请立即拨 120</div>
+                        </div>
+
+                        <!-- photo 占位：MVP 用多行 URL 先替代，阶段 2 升级为真上传 -->
+                        <div th:if="${iv.item.inputType == 'photo'}" class="input-wrap">
+                            <textarea rows="2" th:name="${iv.item.code + '__text'}"
+                                      th:text="${iv.v('text')}"
+                                      placeholder="请家属将照片存入'左腿监测'相册，此处填写备注（阶段 2 支持直接上传）"></textarea>
+                        </div>
+                    </div>
+                </th:block>
+            </section>
+        </th:block>
+
+        <div class="meta">
+            <label>记录人
+                <input type="text" name="_recordedBy" placeholder="如 儿子 / 本人" value="family"/>
+            </label>
+        </div>
+
+        <button type="submit" class="submit-btn">保存</button>
+    </form>
+</div>
+</body>
+</html>

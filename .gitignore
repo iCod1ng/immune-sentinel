@@ -1,0 +1,20 @@
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### IDE ###
+.idea/
+*.iml
+.vscode/
+
+### Env ###
+.env
+data/
+logs/
+
+### Build ###
+*.jar
+*.war
+*.class
