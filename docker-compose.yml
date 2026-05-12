@@ -15,7 +15,7 @@ services:
       - --default-time-zone=+08:00
       - --innodb-buffer-pool-size=512M
     ports:
-      - "127.0.0.1:3306:3306"
+      - "13306:3306"
     volumes:
       - ./data/mysql:/var/lib/mysql
     healthcheck:
